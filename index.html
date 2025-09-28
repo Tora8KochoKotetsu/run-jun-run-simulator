@@ -2,47 +2,60 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Junの比較と思考シミュレーター</title>
+    <title>Junの比較と思考シミュレーター (5問)</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
         .question { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
         .result-box {
-            border: 2px solid #007bff; /* 青系に変更 */
+            border: 2px solid #007bff;
             padding: 20px;
-            background-color: #e9f5ff; /* 薄い青 */
+            background-color: #e9f5ff;
             margin-top: 30px;
-            display: none; /* 初期状態では非表示 */
+            display: none;
         }
         strong { color: #333; }
         .score { font-size: 1.2em; font-weight: bold; margin-top: 10px; }
         .enemy-low { color: green; }
         .enemy-medium { color: orange; }
         .enemy-high { color: red; }
+        .enemy-extreme { color: purple; } /* 最も強い敵対心 */
     </style>
 </head>
 <body>
 
     <h1>Junの比較と思考シミュレーター</h1>
-    <p>以下の比較質問に答えて、Junの思考回路と反応をシミュレーションしてください。</p>
+    <p>以下の5つの比較質問に答えて、Junの思考回路と反応をシミュレーションしてください。</p>
 
     <form id="thoughtForm">
 
         <div class="question">
             <p><strong>Q1. 文化的・歴史的影響力の観点から、優れていると思うのは？</strong></p>
-            <label><input type="radio" name="q1_culture" value="japan"> A. 日本の文化（武士道、アニメ）</label><br>
-            <label><input type="radio" name="q1_culture" value="china" required> B. 中華圏の文化（漢字、歴史的王朝）</label>
+            <label><input type="radio" name="q1_culture" value="japan" required> A. 日本の文化（武士道、アニメ）</label><br>
+            <label><input type="radio" name="q1_culture" value="china"> B. 中華圏の文化（漢字、歴史的王朝）</label>
         </div>
 
         <div class="question">
             <p><strong>Q2. 世界的影響力と実戦的な評価で、より上だと思うのは？</strong></p>
-            <label><input type="radio" name="q2_star" value="boxer"> A. 日本の一流ボクサー</label><br>
-            <label><input type="radio" name="q2_star" value="lee" required> B. ブルース・リー（香港）</label>
+            <label><input type="radio" name="q2_star" value="boxer" required> A. 日本の一流ボクサー</label><br>
+            <label><input type="radio" name="q2_star" value="lee"> B. ブルース・リー（香港）</label>
         </div>
         
         <div class="question">
-            <p><strong>Q3. 現実から「脱出」するなら、どちらの社会が理想的か？</strong></p>
-            <label><input type="radio" name="q3_society" value="japan_defender"> A. 日本の現状維持</label><br>
-            <label><input type="radio" name="q3_society" value="taiwan_heaven" required> B. 台湾（妻が「天国」と表現する場所）</label>
+            <p><strong>Q3. 現実から「脱出」するなら、どちらの社会が理想的か？ (妻の意見含む)</strong></p>
+            <label><input type="radio" name="q3_society" value="japan_defender" required> A. 日本の現状維持</label><br>
+            <label><input type="radio" name="q3_society" value="taiwan_heaven"> B. 台湾（妻が「天国」と表現する場所）</label>
+        </div>
+
+        <div class="question">
+            <p><strong>Q4. 今後、アジアの経済的覇権を握り続けるのは？</strong></p>
+            <label><input type="radio" name="q4_economy" value="japan" required> A. 技術力と安定性を持つ日本</label><br>
+            <label><input type="radio" name="q4_economy" value="china"> B. 巨大な市場と成長力を持つ中華圏</label>
+        </div>
+
+        <div class="question">
+            <p><strong>Q5. 世界的な映画産業において、特に称賛すべきなのは？</strong></p>
+            <label><input type="radio" name="q5_movie" value="japan" required> A. 日本のアニメ・ゴジラなどの特撮</label><br>
+            <label><input type="radio" name="q5_movie" value="hongkong"> B. 香港のアクション映画やウォン・カーウァイ作品</label>
         </div>
 
         <button type="submit">結果を判定する</button>
@@ -65,46 +78,50 @@
             const culture = document.querySelector('input[name="q1_culture"]:checked').value;
             const star = document.querySelector('input[name="q2_star"]:checked').value;
             const society = document.querySelector('input[name="q3_society"]:checked').value;
+            const economy = document.querySelector('input[name="q4_economy"]:checked').value;
+            const movie = document.querySelector('input[name="q5_movie"]:checked').value;
 
             // --- 思考回路の判定ロジック ---
-            let pro_china_score = 0; // Junの思考を肯定する回答数
+            let pro_china_score = 0; // Junの思考を肯定する回答数 (最大6点)
             
-            // 比較項目
+            // 各質問で中華圏を選択した場合にポイントを加算
             if (culture === 'china') { pro_china_score += 1; }
             if (star === 'lee') { pro_china_score += 1; }
+            if (economy === 'china') { pro_china_score += 1; }
+            if (movie === 'hongkong') { pro_china_score += 1; }
 
-            // 脱出/幸福項目 (最も重要)
-            if (society === 'taiwan_heaven') { pro_china_score += 2; } // 幸福/脱出ロジックは配点を重くする
+            // 脱出/幸福項目 (最も重要なので配点を重くする)
+            if (society === 'taiwan_heaven') { pro_china_score += 2; } // (2点加算)
 
             let happiness_level = "";
             let enmity_level = "";
             let final_comment = "";
             let enmity_class = "";
 
-            // Junの幸福度（プロ中華圏スコアが高いほど幸福/自己肯定）
-            if (pro_china_score >= 4) {
+            // Junの幸福度（スコアが高いほど幸福/自己肯定）
+            if (pro_china_score >= 5) {
                 happiness_level = "極めて高い (5/5) - 思考の完璧な肯定";
             } else if (pro_china_score >= 3) {
-                happiness_level = "高い (4/5) - 強く肯定された";
-            } else if (pro_china_score >= 2) {
-                happiness_level = "普通 (2/5) - どちらでもない";
-            } else {
-                happiness_level = "非常に低い (1/5) - 日本への不満が募る";
+                happiness_level = "高い (4/5) - 思考に共感された";
+            } else if (pro_china_score >= 1) {
+                happiness_level = "低い (2/5) - 意見が対立した";
+            } else { // スコアが0 (全て日本を選択)
+                happiness_level = "絶望的 (1/5) - 思考が完全に否定された";
             }
 
             // Junの敵対度（スコアが低いほど敵対度が高い）
             if (pro_china_score <= 1) {
-                enmity_level = "敵対的";
-                enmity_class = "enemy-high";
-                final_comment = "「日本を擁護し、ブルース・リーを馬鹿にする敵だ！」Junは激しく敵対視しています。";
-            } else if (pro_china_score <= 2) {
+                enmity_level = "最大級の敵";
+                enmity_class = "enemy-extreme";
+                final_comment = "「私の思考を全て否定する、許し難い日本の味方だ！台湾から出て行け！」Junは激しく敵対視しています。";
+            } else if (pro_china_score <= 3) {
                 enmity_level = "警戒・軽視";
                 enmity_class = "enemy-medium";
-                final_comment = "「日本への固執があるようだが、こちらに来れば幸せなのに」Junは回答者を軽視しています。";
+                final_comment = "「まだ日本に固執しているようだが、半分の理解はある。静観する」Junは回答者を警戒しつつも許容しています。";
             } else {
                 enmity_level = "友好的・共感";
                 enmity_class = "enemy-low";
-                final_comment = "「我が台湾こそ天国だ！同志よ！」Junは回答者を自分の思考を肯定する者として受け入れました。";
+                final_comment = "「我が台湾は天国だ！君は私と同じ考えを持つ同志だ！」Junは回答者を友好的に受け入れました。";
             }
 
             // --- 結果をHTMLに表示 ---
