@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Junの思考回路シミュレーター (JS版)</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .question { margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .result-box {
+            border: 2px solid #5cb85c;
+            padding: 20px;
+            background-color: #d9edf7;
+            margin-top: 20px;
+            /* 初期状態では非表示 */
+            display: none;
+        }
+        strong { color: #333; }
+        .summary { font-size: 1.1em; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <h1>Junの思考回路シミュレーター</h1>
+    <p>以下の質問に答えて、思考回路を再現してください。</p>
+
+    <form id="thoughtForm">
+
+        <div class="question">
+            <p><strong>Q1. Junが不幸なのは誰のせいだと考えますか？</strong></p>
+            <label><input type="radio" name="q1_cause" value="society" required> A. 社会のせい</label><br>
+            <label><input type="radio" name="q1_cause" value="self"> B. 自分のせい</label>
+        </div>
+
+        <div class="question">
+            <p><strong>Q2. 幸福になるための最も良い解決策は何ですか？</strong></p>
+            <label><input type="radio" name="q2_solution" value="escape" required> A. 日本から脱出する</label><br>
+            <label><input type="radio" name="q2_solution" value="change_japan"> B. 日本を変える努力をする</label>
+        </div>
+        
+        <div class="question">
+            <p><strong>Q3. 敵として認識するのは誰ですか？</strong></p>
+            <label><input type="radio" name="q3_enemy" value="japan_supporter" required> A. 日本を擁護する人</label><br>
+            <label><input type="radio" name="q3_enemy" value="global_critic"> B. 世界中で批判の的になっている独裁者</label>
+        </div>
+
+        <button type="submit">思考の結果を見る</button>
+    </form>
+
+    <div id="resultBox" class="result-box">
+        <h2>現在のJunの状態</h2>
+        <div class="summary">
+            <p><strong>場所の推定:</strong> <span id="loc"></span></p>
+            <p><strong>幸福度:</strong> <span id="status"></span></p>
+            <p><strong>敵の認識:</strong> <span id="enemy"></span></p>
+        </div>
+        <p id="motive"></p>
+    </div>
+
+    <script>
+        // フォームが送信されたときの処理
+        document.getElementById('thoughtForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // フォームのデフォルト動作（ページ遷移）を停止
+
+            // 選択された値を取得
+            const cause = document.querySelector('input[name="q1_cause"]:checked').value;
+            const solution = document.querySelector('input[name="q2_solution"]:checked').value;
+            const enemy = document.querySelector('input[name="q3_enemy"]:checked').value;
+
+            // --- 思考回路の判定ロジック (PHPからの移行) ---
+            let jun_location = "日本";
+            let jun_status = "不幸";
+            let enemy_definition = "特になし";
+            let escape_motive = false;
+
+            // Q1 & Q2 のロジック
+            if (cause === 'society' && solution === 'escape') {
+                // 現実逃避ロジック起動
+                jun_location = "台湾";
+                jun_status = "幸福になれると確信（現実逃避）";
+                escape_motive = true;
+            } else if (cause === 'society') {
+                jun_status = "不満を抱えている";
+            } else {
+                jun_status = "現状を受け入れている";
+            }
+
+            // Q3 のロジック
+            if (enemy === 'japan_supporter') {
+                enemy_definition = "日本を擁護する人、および台湾/香港/中国を批判する人";
+            } else {
+                enemy_definition = "一般的な悪役";
+            }
+
+            // --- 結果をHTMLに表示 ---
+            document.getElementById('loc').textContent = jun_location;
+            document.getElementById('status').textContent = jun_status;
+            document.getElementById('enemy').textContent = enemy_definition;
+            
+            const motiveElement = document.getElementById('motive');
+            if (escape_motive) {
+                motiveElement.style.color = 'green';
+                motiveElement.style.fontWeight = 'bold';
+                motiveElement.textContent = '>>> 現実逃避ロジックが起動しました。妻の意見（台湾=天国）と自己の不幸が結びつき、台湾への脱出を唯一の幸福実現手段と認識しています。';
+            } else {
+                motiveElement.style.color = 'orange';
+                motiveElement.style.fontWeight = 'normal';
+                motiveElement.textContent = '>>> 現実逃避ロジックは起動しませんでしたが、日本や社会への不満は残る可能性があります。';
+            }
+
+            // 結果ボックスを表示
+            document.getElementById('resultBox').style.display = 'block';
+        });
+    </script>
+
+</body>
+</html>
