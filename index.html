@@ -2,111 +2,120 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Junの思考回路シミュレーター (JS版)</title>
+    <title>Junの比較と思考シミュレーター</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .question { margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .question { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
         .result-box {
-            border: 2px solid #5cb85c;
+            border: 2px solid #007bff; /* 青系に変更 */
             padding: 20px;
-            background-color: #d9edf7;
-            margin-top: 20px;
-            /* 初期状態では非表示 */
-            display: none;
+            background-color: #e9f5ff; /* 薄い青 */
+            margin-top: 30px;
+            display: none; /* 初期状態では非表示 */
         }
         strong { color: #333; }
-        .summary { font-size: 1.1em; line-height: 1.6; }
+        .score { font-size: 1.2em; font-weight: bold; margin-top: 10px; }
+        .enemy-low { color: green; }
+        .enemy-medium { color: orange; }
+        .enemy-high { color: red; }
     </style>
 </head>
 <body>
 
-    <h1>Junの思考回路シミュレーター</h1>
-    <p>以下の質問に答えて、思考回路を再現してください。</p>
+    <h1>Junの比較と思考シミュレーター</h1>
+    <p>以下の比較質問に答えて、Junの思考回路と反応をシミュレーションしてください。</p>
 
     <form id="thoughtForm">
 
         <div class="question">
-            <p><strong>Q1. Junが不幸なのは誰のせいだと考えますか？</strong></p>
-            <label><input type="radio" name="q1_cause" value="society" required> A. 社会のせい</label><br>
-            <label><input type="radio" name="q1_cause" value="self"> B. 自分のせい</label>
+            <p><strong>Q1. 文化的・歴史的影響力の観点から、優れていると思うのは？</strong></p>
+            <label><input type="radio" name="q1_culture" value="japan"> A. 日本の文化（武士道、アニメ）</label><br>
+            <label><input type="radio" name="q1_culture" value="china" required> B. 中華圏の文化（漢字、歴史的王朝）</label>
         </div>
 
         <div class="question">
-            <p><strong>Q2. 幸福になるための最も良い解決策は何ですか？</strong></p>
-            <label><input type="radio" name="q2_solution" value="escape" required> A. 日本から脱出する</label><br>
-            <label><input type="radio" name="q2_solution" value="change_japan"> B. 日本を変える努力をする</label>
+            <p><strong>Q2. 世界的影響力と実戦的な評価で、より上だと思うのは？</strong></p>
+            <label><input type="radio" name="q2_star" value="boxer"> A. 日本の一流ボクサー</label><br>
+            <label><input type="radio" name="q2_star" value="lee" required> B. ブルース・リー（香港）</label>
         </div>
         
         <div class="question">
-            <p><strong>Q3. 敵として認識するのは誰ですか？</strong></p>
-            <label><input type="radio" name="q3_enemy" value="japan_supporter" required> A. 日本を擁護する人</label><br>
-            <label><input type="radio" name="q3_enemy" value="global_critic"> B. 世界中で批判の的になっている独裁者</label>
+            <p><strong>Q3. 現実から「脱出」するなら、どちらの社会が理想的か？</strong></p>
+            <label><input type="radio" name="q3_society" value="japan_defender"> A. 日本の現状維持</label><br>
+            <label><input type="radio" name="q3_society" value="taiwan_heaven" required> B. 台湾（妻が「天国」と表現する場所）</label>
         </div>
 
-        <button type="submit">思考の結果を見る</button>
+        <button type="submit">結果を判定する</button>
     </form>
 
     <div id="resultBox" class="result-box">
-        <h2>現在のJunの状態</h2>
+        <h2>シミュレーション結果</h2>
         <div class="summary">
-            <p><strong>場所の推定:</strong> <span id="loc"></span></p>
-            <p><strong>幸福度:</strong> <span id="status"></span></p>
-            <p><strong>敵の認識:</strong> <span id="enemy"></span></p>
+            <p class="score">Junの幸福度: <span id="happiness"></span></p>
+            <p class="score">回答者へのJunの敵対度: <span id="enmity"></span></p>
         </div>
-        <p id="motive"></p>
+        <p id="comment"></p>
     </div>
 
     <script>
-        // フォームが送信されたときの処理
         document.getElementById('thoughtForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // フォームのデフォルト動作（ページ遷移）を停止
+            event.preventDefault(); // ページ遷移を停止
 
             // 選択された値を取得
-            const cause = document.querySelector('input[name="q1_cause"]:checked').value;
-            const solution = document.querySelector('input[name="q2_solution"]:checked').value;
-            const enemy = document.querySelector('input[name="q3_enemy"]:checked').value;
+            const culture = document.querySelector('input[name="q1_culture"]:checked').value;
+            const star = document.querySelector('input[name="q2_star"]:checked').value;
+            const society = document.querySelector('input[name="q3_society"]:checked').value;
 
-            // --- 思考回路の判定ロジック (PHPからの移行) ---
-            let jun_location = "日本";
-            let jun_status = "不幸";
-            let enemy_definition = "特になし";
-            let escape_motive = false;
+            // --- 思考回路の判定ロジック ---
+            let pro_china_score = 0; // Junの思考を肯定する回答数
+            
+            // 比較項目
+            if (culture === 'china') { pro_china_score += 1; }
+            if (star === 'lee') { pro_china_score += 1; }
 
-            // Q1 & Q2 のロジック
-            if (cause === 'society' && solution === 'escape') {
-                // 現実逃避ロジック起動
-                jun_location = "台湾";
-                jun_status = "幸福になれると確信（現実逃避）";
-                escape_motive = true;
-            } else if (cause === 'society') {
-                jun_status = "不満を抱えている";
+            // 脱出/幸福項目 (最も重要)
+            if (society === 'taiwan_heaven') { pro_china_score += 2; } // 幸福/脱出ロジックは配点を重くする
+
+            let happiness_level = "";
+            let enmity_level = "";
+            let final_comment = "";
+            let enmity_class = "";
+
+            // Junの幸福度（プロ中華圏スコアが高いほど幸福/自己肯定）
+            if (pro_china_score >= 4) {
+                happiness_level = "極めて高い (5/5) - 思考の完璧な肯定";
+            } else if (pro_china_score >= 3) {
+                happiness_level = "高い (4/5) - 強く肯定された";
+            } else if (pro_china_score >= 2) {
+                happiness_level = "普通 (2/5) - どちらでもない";
             } else {
-                jun_status = "現状を受け入れている";
+                happiness_level = "非常に低い (1/5) - 日本への不満が募る";
             }
 
-            // Q3 のロジック
-            if (enemy === 'japan_supporter') {
-                enemy_definition = "日本を擁護する人、および台湾/香港/中国を批判する人";
+            // Junの敵対度（スコアが低いほど敵対度が高い）
+            if (pro_china_score <= 1) {
+                enmity_level = "敵対的";
+                enmity_class = "enemy-high";
+                final_comment = "「日本を擁護し、ブルース・リーを馬鹿にする敵だ！」Junは激しく敵対視しています。";
+            } else if (pro_china_score <= 2) {
+                enmity_level = "警戒・軽視";
+                enmity_class = "enemy-medium";
+                final_comment = "「日本への固執があるようだが、こちらに来れば幸せなのに」Junは回答者を軽視しています。";
             } else {
-                enemy_definition = "一般的な悪役";
+                enmity_level = "友好的・共感";
+                enmity_class = "enemy-low";
+                final_comment = "「我が台湾こそ天国だ！同志よ！」Junは回答者を自分の思考を肯定する者として受け入れました。";
             }
 
             // --- 結果をHTMLに表示 ---
-            document.getElementById('loc').textContent = jun_location;
-            document.getElementById('status').textContent = jun_status;
-            document.getElementById('enemy').textContent = enemy_definition;
+            document.getElementById('happiness').textContent = happiness_level;
             
-            const motiveElement = document.getElementById('motive');
-            if (escape_motive) {
-                motiveElement.style.color = 'green';
-                motiveElement.style.fontWeight = 'bold';
-                motiveElement.textContent = '>>> 現実逃避ロジックが起動しました。妻の意見（台湾=天国）と自己の不幸が結びつき、台湾への脱出を唯一の幸福実現手段と認識しています。';
-            } else {
-                motiveElement.style.color = 'orange';
-                motiveElement.style.fontWeight = 'normal';
-                motiveElement.textContent = '>>> 現実逃避ロジックは起動しませんでしたが、日本や社会への不満は残る可能性があります。';
-            }
+            const enmityElement = document.getElementById('enmity');
+            enmityElement.textContent = enmity_level;
+            enmityElement.className = 'score ' + enmity_class; // 色付け用のクラスを追加
 
+            document.getElementById('comment').textContent = final_comment;
+            
             // 結果ボックスを表示
             document.getElementById('resultBox').style.display = 'block';
         });
